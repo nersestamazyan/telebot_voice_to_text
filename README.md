@@ -12,5 +12,5 @@ To solve the problem, follow these steps:
 4. python -m pip install --force-reinstall soundfile
 
 To run the program can create a docker image e.g.
-docker build -t image_name .
+docker build -t image_name --build-arg ENVIRONMENT=local .
 docker run -it -v ./:/opt image_name
