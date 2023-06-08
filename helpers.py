@@ -35,3 +35,7 @@ def create_cron_job(directory_path, hour, minute):
     print("Cron job created successfully.")
 
 
+def convert_to_dict(telegram_object):
+    converted_dict = vars(telegram_object)
+    return converted_dict
+
