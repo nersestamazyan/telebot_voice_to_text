@@ -1,5 +1,9 @@
+import os
+
+import openai
 import soundfile as sf
 from crontab import CronTab
+from jiwer import wer
 
 from constants import WORKDIR
 
@@ -38,4 +42,42 @@ def create_cron_job(directory_path, hour, minute):
 def convert_to_dict(telegram_object):
     converted_dict = vars(telegram_object)
     return converted_dict
+
+
+def get_text_from_voice(resampled_file_name):
+    with open(resampled_file_name, "rb") as audio_file:
+        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        response_dict = vars(transcript)
+        text_message = response_dict.get('_previous').get("text")
+        return text_message
+
+
+def get_list_of_all_test_wav_files(path):
+    file_list = []
+    for file_name in os.listdir(path):
+        if file_name.endswith(".wav"):
+            file_list.append(os.path.join(path, file_name))
+            file_list = sorted(file_list, key=lambda x: os.path.basename(x))
+    print(file_list)
+    return file_list
+
+
+def get_wer_for_file(resampled_file_name, reference):
+    print(resampled_file_name)
+    print("This was the original text\n", reference)
+    recognized_transcript = get_text_from_voice(resampled_file_name)
+
+    word_error_rate = wer(reference, hypothesis=recognized_transcript)
+    print("This is the recognized transcript\n", recognized_transcript)
+    print(f"The word error rate is {word_error_rate}")
+
+    test_result = {
+        'resampled_file_name': resampled_file_name,
+        'reference': reference,
+        'recognized_transcript': recognized_transcript,
+        'word_error_rate': word_error_rate
+    }
+
+    return test_result
+
 

@@ -9,6 +9,7 @@ def get_telegram_bot_configs():
             api_key = os.environ['API_KEY']
             bot_name = os.environ['BOT_NAME']
             openai_key = os.environ['OPENAI_KEY']
+            chat_id = os.environ['CHAT_ID']
         else:
             # Read the config file
             with open('config.yml', 'r') as file:
@@ -18,8 +19,9 @@ def get_telegram_bot_configs():
             api_key = config['api_key']
             bot_name = config['bot_name']
             openai_key = config['openai_key']
+            chat_id = config['chat_id']
     except (yaml.YAMLError, FileNotFoundError, KeyError, TypeError):
         # Handle the case if any of the values are missing
         raise Exception('Bot token is not defined')
 
-    return api_key, bot_name, openai_key
+    return api_key, bot_name, openai_key, chat_id
