@@ -5,3 +5,4 @@ openai==0.27.7
 PyYAML==6.0b1
 python-crontab==2.7.1
 numpy==1.24.3
+jiwer==3.0.1

@@ -9,7 +9,7 @@ from wrapper import get_telegram_bot_configs
 from helpers import resample_the_audio_file, convert_to_dict
 from constants import WORKDIR, TELEGRAM_DOWNLOAD_URL, HELP_COMMAND_RESPONSE, START_COMMAND_RESPONSE
 
-api_key, bot_name, openai_key = get_telegram_bot_configs()
+api_key, bot_name, openai_key, chat_id = get_telegram_bot_configs()
 bot = telebot.TeleBot(api_key)
 openai.api_key = openai_key
 
@@ -65,7 +65,10 @@ def get_text_and_send_to_bot(resampled_file_name, message):
     audio_file = open(resampled_file_name, "rb")
     transcript = openai.Audio.transcribe("whisper-1", audio_file)
     response_dict = vars(transcript)
-    text_message = response_dict.get('_previous').get("text")
+    if response_dict.get('_previous').get("text") != '':
+        text_message = response_dict.get('_previous').get("text")
+    else:
+        text_message = 'The voice message was empty'
     print(text_message)
     bot.reply_to(message, text_message)
     return text_message
