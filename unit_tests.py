@@ -3,9 +3,8 @@ import unittest
 from unittest.mock import MagicMock
 
 import telebot
-from jiwer import wer
 
-from helpers import get_wer_for_file, get_text_from_voice, get_list_of_all_test_wav_files
+from helpers import get_wer_for_file
 from telegram_bot import help_command, start_command, api_key, chat_id
 from constants import HELP_COMMAND_RESPONSE, START_COMMAND_RESPONSE, REF_LIST, PATH_OF_TEST_WAV_FILES
 
@@ -38,27 +37,6 @@ class TestBot(unittest.TestCase):
         except AssertionError as e:
             print(e, "\nActual value is not equal to the expected one")
 
-    # To run all the WER tests as one
-    # def test_wer_all(self):
-    #     test_results = []
-    #     wav_file_list = get_list_of_all_test_wav_files(path=PATH_OF_TEST_WAV_FILES)
-    #     for i, (resampled_file_name, reference) in enumerate(zip(wav_file_list, self.reference)):
-    #         print(resampled_file_name)
-    #         print("This was the original text\n", reference)
-    #         recognized_transcript = get_text_from_voice(resampled_file_name)
-    #
-    #         word_error_rate = wer(reference, hypothesis=recognized_transcript)
-    #         print("This is the recognized transcript\n", recognized_transcript)
-    #         print(f"The word error rate is {word_error_rate}")
-    #         test_result = {
-    #             'resampled_file_name': resampled_file_name,
-    #             'reference': reference,
-    #             'recognized_transcript': recognized_transcript,
-    #             'word_error_rate': word_error_rate
-    #         }
-    #         test_results.append(test_result)
-    #
-    #     return test_results
 
     def test_wer_for_1_wav(self):
         resampled_file_name = os.path.join(PATH_OF_TEST_WAV_FILES, "1.wav")
@@ -83,13 +61,6 @@ class TestBot(unittest.TestCase):
         word_error_rate = test_result.get("word_error_rate")*100
         print(test_result)
         self.assertGreaterEqual(10, word_error_rate, "Word error rate should be less than 10%")
-
-# def run_tests():
-#     suite = unittest.TestSuite()
-#     suite.addTest(TestBot('test_help_command'))
-#     suite.addTest(TestBot('test_start_command'))
-#     runner = unittest.TextTestRunner()
-#     runner.run(suite)
 
 
 if __name__ == '__main__':

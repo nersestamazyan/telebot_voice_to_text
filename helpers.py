@@ -2,7 +2,6 @@ import os
 
 import openai
 import soundfile as sf
-from crontab import CronTab
 from jiwer import wer
 
 from constants import WORKDIR
@@ -22,23 +21,6 @@ def resample_the_audio_file(file_name_on_machine):
     return resampled_file_name
 
 
-def create_cron_job(directory_path, hour, minute):
-    cron = CronTab(user=True)
-
-    # Check if the cron job already exists
-    for job in cron:
-        if job.command == f'find {directory_path} -type f -mtime +1 -delete':
-            print("Cron job already exists. Skipping creation.")
-            return
-
-    # Create a new cron job
-    new_job = cron.new(command=f'find {directory_path} -type f -mtime +1 -delete')
-    new_job.setall(f'{minute} {hour} * * *')
-    cron.append(new_job)
-    cron.write()
-    print("Cron job created successfully.")
-
-
 def convert_to_dict(telegram_object):
     converted_dict = vars(telegram_object)
     return converted_dict
@@ -47,8 +29,11 @@ def convert_to_dict(telegram_object):
 def get_text_from_voice(resampled_file_name):
     with open(resampled_file_name, "rb") as audio_file:
         transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        response_dict = vars(transcript)
-        text_message = response_dict.get('_previous').get("text")
+        response_dict = convert_to_dict(transcript)
+        if response_dict.get('_previous').get("text") != '':
+            text_message = response_dict.get('_previous').get("text")
+        else:
+            text_message = 'The voice message was empty'
         return text_message
 
 
@@ -79,5 +64,3 @@ def get_wer_for_file(resampled_file_name, reference):
     }
 
     return test_result
-
-
