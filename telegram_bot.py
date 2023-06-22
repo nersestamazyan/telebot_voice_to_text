@@ -6,7 +6,7 @@ import telebot
 import openai
 
 from wrapper import get_telegram_bot_configs
-from helpers import resample_the_audio_file, convert_to_dict
+from helpers import resample_the_audio_file, convert_to_dict, get_text_from_voice
 from constants import WORKDIR, TELEGRAM_DOWNLOAD_URL, HELP_COMMAND_RESPONSE, START_COMMAND_RESPONSE
 
 api_key, bot_name, openai_key, chat_id = get_telegram_bot_configs()
@@ -26,7 +26,7 @@ def help_command(message):
 @bot.message_handler(commands=['start'])
 def start_command(message):
     print("Start command received")
-    start_response = vars(bot.reply_to(message, START_COMMAND_RESPONSE))
+    start_response = convert_to_dict(bot.reply_to(message, START_COMMAND_RESPONSE))
     return start_response.get("text")
 
 
@@ -62,13 +62,7 @@ def voice_message(message):
 
 
 def get_text_and_send_to_bot(resampled_file_name, message):
-    audio_file = open(resampled_file_name, "rb")
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
-    response_dict = vars(transcript)
-    if response_dict.get('_previous').get("text") != '':
-        text_message = response_dict.get('_previous').get("text")
-    else:
-        text_message = 'The voice message was empty'
+    text_message = get_text_from_voice(resampled_file_name)
     print(text_message)
     bot.reply_to(message, text_message)
     return text_message
