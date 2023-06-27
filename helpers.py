@@ -3,6 +3,7 @@ import os
 import openai
 import soundfile as sf
 from jiwer import wer
+import numpy as np
 
 from constants import WORKDIR
 
@@ -47,6 +48,7 @@ def get_list_of_all_test_wav_files(path):
     return file_list
 
 
+# Using jiwer library
 def get_wer_for_file(resampled_file_name, reference):
     print(resampled_file_name)
     print("This was the original text\n", reference)
@@ -64,3 +66,52 @@ def get_wer_for_file(resampled_file_name, reference):
     }
 
     return test_result
+
+
+def calculate_wer(resampled_file_name, reference):
+    recognized_transcript = get_text_from_voice(resampled_file_name)
+    # Split both texts to get lists of words
+    split_recognized_text = recognized_transcript.split()
+    word_list_for_reference = reference.split()
+    word_count_for_reference = len(word_list_for_reference)
+    word_count_for_recognized_text = len(split_recognized_text)
+    # Use numpy zeros to get a matrix with the lengths + 1 of the texts
+    distance = np.zeros((word_count_for_reference + 1, word_count_for_recognized_text + 1))
+    # Filling the first row and column with the numbers in ascending order of the words count
+    for i in range(word_count_for_reference + 1):
+        distance[i, 0] = i
+    for j in range(word_count_for_recognized_text + 1):
+        distance[0, j] = j
+    # Iterating over the words in both predefined and recognized texts
+    for i in range(1, word_count_for_reference + 1):
+        for j in range(1, word_count_for_recognized_text + 1):
+            # If the words are the same, then no operation is needed
+            if word_list_for_reference[i - 1] == split_recognized_text[j - 1]:
+                distance[i, j] = distance[i - 1, j - 1]
+            else:
+                # Otherwise we need to count the number of actions to make the words match
+                # We count it for three different operations - substitution, insertion, and deletion, and we need to
+                # take the minimum number as the less, the better
+                substitution = distance[i - 1, j - 1] + 1
+                insertion = distance[i, j - 1] + 1
+                deletion = distance[i - 1, j] + 1
+                distance[i, j] = min(substitution, insertion, deletion)
+    # Finally, in order to get the word error rate, we get the value of the last cell, and then divide it to
+    # the total number of the predefined text
+    word_error_rate = distance[word_count_for_reference, word_count_for_recognized_text] / word_count_for_reference
+    return word_error_rate
+
+
+# Using the function above
+def get_wer_for_one_file(resampled_file_name, reference):
+    word_error_rate = calculate_wer(resampled_file_name, reference)
+    print(f"The word error rate is {word_error_rate}")
+
+    test_result = {
+        'resampled_file_name': resampled_file_name,
+        'reference': reference,
+        'word_error_rate': word_error_rate
+    }
+
+    return test_result
+
