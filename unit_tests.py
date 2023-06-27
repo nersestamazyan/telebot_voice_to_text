@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import telebot
 
-from helpers import get_wer_for_file
+from helpers import get_wer_for_file, get_wer_for_one_file
 from telegram_bot import help_command, start_command, api_key, chat_id
 from constants import HELP_COMMAND_RESPONSE, START_COMMAND_RESPONSE, REF_LIST, PATH_OF_TEST_WAV_FILES
 
@@ -37,11 +37,10 @@ class TestBot(unittest.TestCase):
         except AssertionError as e:
             print(e, "\nActual value is not equal to the expected one")
 
-
     def test_wer_for_1_wav(self):
         resampled_file_name = os.path.join(PATH_OF_TEST_WAV_FILES, "1.wav")
         reference = self.reference[0]
-        test_result = get_wer_for_file(resampled_file_name, reference)
+        test_result = get_wer_for_one_file(resampled_file_name, reference)
         word_error_rate = test_result.get("word_error_rate")*100
         print(test_result)
         self.assertGreaterEqual(10, word_error_rate, "Word error rate should be less than 10%")
@@ -49,7 +48,7 @@ class TestBot(unittest.TestCase):
     def test_wer_for_2_wav(self):
         resampled_file_name = os.path.join(PATH_OF_TEST_WAV_FILES, "2.wav")
         reference = self.reference[1]
-        test_result = get_wer_for_file(resampled_file_name, reference)
+        test_result = get_wer_for_one_file(resampled_file_name, reference)
         word_error_rate = test_result.get("word_error_rate")*100
         print(test_result)
         self.assertGreaterEqual(10, word_error_rate, "Word error rate should be less than 10%")
@@ -57,7 +56,7 @@ class TestBot(unittest.TestCase):
     def test_wer_for_3_wav(self):
         resampled_file_name = os.path.join(PATH_OF_TEST_WAV_FILES, "3.wav")
         reference = self.reference[2]
-        test_result = get_wer_for_file(resampled_file_name, reference)
+        test_result = get_wer_for_one_file(resampled_file_name, reference)
         word_error_rate = test_result.get("word_error_rate")*100
         print(test_result)
         self.assertGreaterEqual(10, word_error_rate, "Word error rate should be less than 10%")
